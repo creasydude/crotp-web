@@ -1,11 +1,11 @@
-const VERSION = 'v3';
+const VERSION = 'v4';
 const APP_CACHE = `crotp-app-${VERSION}`;
 const RUNTIME_CACHE = `crotp-runtime-${VERSION}`;
 
 const PRECACHE_URLS = [
   '/index.html',
   '/manifest.webmanifest',
-  '/vite.svg',
+  '/crotp.svg',
 ];
 
 // Install: pre-cache app shell

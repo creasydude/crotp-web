@@ -13,7 +13,7 @@
   "categories": ["utilities", "security"],
   "icons": [
     {
-      "src": "/vite.svg",
+      "src": "/crotp.svg",
       "type": "image/svg+xml",
       "sizes": "any",
       "purpose": "any"
