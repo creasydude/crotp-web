@@ -463,6 +463,35 @@ async function refreshList() {
   const all = orderRecords
     .map((r) => decryptedCache.get(r.id))
     .filter((e): e is DecryptedEntry => !!e);
+
+  // Empty-state UI for first-time users (or after clearing data)
+  if (all.length === 0) {
+    container.innerHTML = `
+      <div class="empty-wrap">
+        <div class="card glass empty-state" role="region" aria-label="Get started">
+          <svg class="empty-icon" width="36" height="36" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <circle cx="12" cy="12" r="9" stroke="${ACCENT}" stroke-width="2"></circle>
+            <path d="M12 8v8M8 12h8" stroke="${ACCENT}" stroke-width="2" stroke-linecap="round"></path>
+          </svg>
+          <h2>Add your first OTP</h2>
+          <p class="muted">Import a QR, paste an otpauth URI, or enter details manually.</p>
+          <div class="row">
+            <button id="emptyAddBtn" class="primary">Add OTP</button>
+            <button id="emptyImportBtn" class="ghost">Import URI</button>
+            <button id="emptyScanBtn" class="ghost">Scan QR</button>
+          </div>
+        </div>
+      </div>
+    `;
+    const addBtn = container.querySelector<HTMLButtonElement>('#emptyAddBtn');
+    const importBtn = container.querySelector<HTMLButtonElement>('#emptyImportBtn');
+    const scanBtn = container.querySelector<HTMLButtonElement>('#emptyScanBtn');
+    addBtn?.addEventListener('click', () => (document.querySelector<HTMLDialogElement>('#manualDialog')!).showModal());
+    importBtn?.addEventListener('click', () => (document.querySelector<HTMLDialogElement>('#uriDialog')!).showModal());
+    scanBtn?.addEventListener('click', () => (document.querySelector<HTMLDialogElement>('#qrDialog')!).showModal());
+    return;
+  }
+
   const cards = await Promise.all(
     all.map(async (e) => {
       const windowData = await generateTOTPWindow({
@@ -472,7 +501,14 @@ async function refreshList() {
         algorithm: e.alg,
         timestamp: Date.now(),
       });
-      return renderCard(e, windowData.current, windowData.prev, windowData.next, windowData.remainingSeconds, windowData.period);
+      return renderCard(
+        e,
+        windowData.current,
+        windowData.prev,
+        windowData.next,
+        windowData.remainingSeconds,
+        windowData.period
+      );
     })
   );
   container.innerHTML = cards.join('');
