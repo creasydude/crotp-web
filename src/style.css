@@ -1,0 +1,407 @@
+:root {
+  color-scheme: dark;
+  --bg: #0f0f14;
+  --bg-elev: #14141b;
+  --surface: rgba(255, 255, 255, 0.06);
+  --surface-strong: rgba(255, 255, 255, 0.12);
+  --border: rgba(255, 255, 255, 0.12);
+  --shadow: 0 10px 30px rgba(0,0,0,0.35);
+
+  --text: #e5e7eb;    /* gray-200 */
+  --muted: #9ca3af;   /* gray-400 */
+  --accent: #7c3aed;  /* purple-600 */
+  --accent-500: #8b5cf6;
+  --accent-700: #6d28d9;
+
+  --radius: 14px;
+  --radius-sm: 10px;
+  --radius-lg: 18px;
+
+  --focus: 0 0 0 3px rgba(124, 58, 237, 0.45);
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    color-scheme: light;
+    --bg: #f8fafc;            /* slate-50 */
+    --bg-elev: #ffffff;
+    --surface: rgba(0,0,0,0.04);
+    --surface-strong: rgba(0,0,0,0.08);
+    --border: rgba(0,0,0,0.12);
+    --shadow: 0 10px 30px rgba(0,0,0,0.10);
+
+    --text: #111827;   /* gray-900 */
+    --muted: #6b7280;  /* gray-500 */
+    --accent: #7c3aed;
+    --accent-500: #6d28d9;
+    --accent-700: #5b21b6;
+  }
+}
+
+/* Base reset and typography */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: radial-gradient(1200px 800px at 20% -10%, rgba(124,58,237,0.15), transparent 60%),
+              radial-gradient(1000px 600px at 120% 20%, rgba(124,58,237,0.08), transparent 60%),
+              var(--bg);
+  color: var(--text);
+  font: 400 16px/1.6 system-ui, -apple-system, Segoe UI, Roboto, Inter, "Helvetica Neue", Arial, "Apple Color Emoji", "Segoe UI Emoji";
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+  color: var(--accent);
+  text-decoration: none;
+}
+a:hover {
+  text-decoration: underline;
+}
+
+/* Layout */
+#app {
+  min-height: 100vh;
+  display: grid;
+  grid-template-rows: auto 1fr;
+}
+
+.app-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  backdrop-filter: saturate(160%) blur(10px);
+  -webkit-backdrop-filter: saturate(160%) blur(10px);
+  background: linear-gradient(180deg, rgba(0,0,0,0.35), rgba(0,0,0,0)) ;
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.brand {
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  display: inline-flex;
+  gap: 10px;
+  align-items: center;
+  font-size: 18px;
+}
+.brand .logo {
+  display: inline-block;
+  flex: 0 0 auto;
+  filter: drop-shadow(0 0 0 rgba(0,0,0,0)); /* keep crisp */
+}
+.brand .logo-text {
+  font-weight: 700;
+  letter-spacing: 0.3px;
+}
+.brand .dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  display: inline-block;
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.25);
+}
+
+.actions {
+  display: inline-flex;
+  gap: 8px;
+}
+
+.app-main {
+  padding: 22px 18px 40px;
+  max-width: 1100px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+/* Utilities */
+.row {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+.row.space {
+  justify-content: space-between;
+}
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+}
+.glass {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  backdrop-filter: saturate(180%) blur(14px);
+  -webkit-backdrop-filter: saturate(180%) blur(14px);
+}
+
+.card {
+  padding: 16px;
+}
+
+.muted {
+  color: var(--muted);
+}
+.mini {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+/* Buttons */
+button {
+  appearance: none;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  color: var(--text);
+  background: var(--surface);
+  cursor: pointer;
+  transition: background 160ms ease, border-color 160ms ease, transform 80ms ease;
+  font: inherit;
+}
+button:hover {
+  background: var(--surface-strong);
+}
+button:active {
+  transform: translateY(1px);
+}
+button:focus-visible {
+  outline: none;
+  box-shadow: var(--focus);
+}
+
+button.primary {
+  background: var(--accent);
+  border-color: color-mix(in srgb, var(--accent), #000 12%);
+}
+button.primary:hover {
+  background: var(--accent-500);
+}
+button.primary:active {
+  background: var(--accent-700);
+}
+
+button.ghost {
+  background: transparent;
+  border-color: var(--border);
+}
+button.ghost:hover {
+  background: var(--surface);
+}
+
+/* Inputs */
+input, select, textarea {
+  width: 100%;
+  background: var(--bg-elev);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  outline: none;
+  transition: border-color 160ms ease, box-shadow 160ms ease, background 160ms ease;
+}
+input::placeholder, textarea::placeholder {
+  color: var(--muted);
+}
+input:focus, select:focus, textarea:focus {
+  border-color: var(--accent);
+  box-shadow: var(--focus);
+}
+label {
+  display: grid;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+/* Toolbar */
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 18px;
+}
+
+/* Locked card */
+#lockedSection .card {
+  max-width: 520px;
+  margin: 40px auto;
+}
+
+/* Account cards */
+.account-card .label {
+  font-weight: 600;
+  letter-spacing: 0.2px;
+}
+.account-card .codes {
+  justify-content: space-between;
+  margin: 8px 0 12px;
+}
+.account-card .code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+  letter-spacing: 1px;
+  padding: 6px 10px;
+  border-radius: var(--radius-sm);
+  border: 1px dashed var(--border);
+  background: rgba(0,0,0,0.15);
+}
+.account-card .code-current {
+  font-size: 1.6rem;
+  letter-spacing: 2px;
+  border-style: solid;
+  border-color: var(--accent);
+  background: linear-gradient(180deg, rgba(124,58,237,0.20), rgba(124,58,237,0.10));
+}
+.account-card .code-prev,
+.account-card .code-next {
+  font-size: 1.1rem;
+  color: var(--muted);
+}
+
+/* Progress bar */
+.progress {
+  height: 6px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 999px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+.progress .bar {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, var(--accent), var(--accent-500));
+}
+
+/* Dialogs */
+dialog {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-elev);
+  color: var(--text);
+  box-shadow: var(--shadow);
+  padding: 16px;
+  max-width: 560px;
+}
+dialog::backdrop {
+  background: rgba(0,0,0,0.6);
+  backdrop-filter: blur(2px);
+}
+dialog h3 {
+  margin: 0 0 8px;
+}
+dialog form {
+  display: grid;
+  gap: 12px;
+}
+dialog .row {
+  gap: 10px;
+}
+dialog menu {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+}
+
+/* Video/QR */
+#qrVideo, #qrCanvas {
+  display: block;
+  width: 100%;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: #000;
+  margin-top: 8px;
+}
+
+/* Screen reader only */
+.sr-only {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
+/* Footer */
+.app-footer {
+  margin-top: 28px;
+  padding: 16px 18px 28px;
+  border-top: 1px solid var(--border);
+  background: transparent;
+}
+.app-footer .social {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  align-items: center;
+}
+.app-footer .icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--muted);
+  padding: 8px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  transition: color 160ms ease, border-color 160ms ease, background 160ms ease, transform 80ms ease;
+  text-decoration: none;
+}
+.app-footer .icon:hover {
+  color: var(--text);
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent), transparent 85%);
+}
+.app-footer .icon:active {
+  transform: translateY(1px);
+}
+.app-footer .icon:focus-visible {
+  outline: none;
+  box-shadow: var(--focus);
+}
+
+/* Fine-tuning */
+h1, h2, h3 {
+  margin: 0 0 8px;
+}
+p {
+  margin: 0 0 10px;
+}
+.muted {
+  margin-bottom: 8px;
+}
+
+/* Responsive tweaks */
+@media (max-width: 600px) {
+  .app-main {
+    padding: 16px 12px 28px;
+  }
+  .toolbar {
+    gap: 8px;
+  }
+  .account-card .codes {
+    gap: 8px;
+  }
+  .account-card .code-current {
+    font-size: 1.4rem;
+  }
+}

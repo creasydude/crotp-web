@@ -1,0 +1,10 @@
+# CROTP Cloudflare Pages config
+# Deploy static build in dist
+# Use `npm run build` then `wrangler pages deploy`
+
+name = "crotp-web"
+
+# Required by Wrangler Pages to read config
+pages_build_output_dir = "dist"
+
+# Legacy [pages] section removed; project is created via CLI and picked automatically

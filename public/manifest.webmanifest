@@ -1,0 +1,22 @@
+{
+  "name": "CROTP",
+  "short_name": "CROTP",
+  "description": "CROTP — Offline, encrypted TOTP authenticator.",
+  "lang": "en",
+  "dir": "ltr",
+  "display": "standalone",
+  "start_url": "/",
+  "scope": "/",
+  "theme_color": "#7c3aed",
+  "background_color": "#111827",
+  "orientation": "portrait",
+  "categories": ["utilities", "security"],
+  "icons": [
+    {
+      "src": "/vite.svg",
+      "type": "image/svg+xml",
+      "sizes": "any",
+      "purpose": "any"
+    }
+  ]
+}

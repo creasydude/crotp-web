@@ -1,0 +1,3 @@
+# CROTP offline authenticator — do not index
+User-agent: *
+Disallow: /
