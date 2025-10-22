@@ -14,6 +14,8 @@ import {
   metaGet,
   metaPut,
   toArrayBuffer,
+  clearAll,
+  DB_NAME,
 } from './db';
 
 type Maybe<T> = T | null;
@@ -79,6 +81,7 @@ function renderShell() {
       </div>
       <div class="actions">
         <button id="helpBtn" class="ghost" title="Help">Help</button>
+        <button id="clearBtn" class="ghost" title="Clear all data">Clear</button>
       </div>
     </header>
 
@@ -182,6 +185,12 @@ function wireGlobalActions() {
   // Lock removed per user request
   const helpBtn = document.querySelector<HTMLButtonElement>('#helpBtn')!;
   helpBtn.addEventListener('click', () => (document.querySelector<HTMLDialogElement>('#helpDialog')!).showModal());
+  const clearBtn = document.querySelector<HTMLButtonElement>('#clearBtn')!;
+  clearBtn.addEventListener('click', async () => {
+    const ok = confirm('This will permanently delete all saved OTP entries, app key, local caches, cookies and storage on this device. Continue?');
+    if (!ok) return;
+    await clearAppData();
+  });
 
   /* No passphrase unlock; session key initializes automatically */
 
@@ -581,7 +590,7 @@ function wireCardActions() {
     if (idx === -1) return;
     if (dir === 'up' && idx === 0) return;
     if (dir === 'down' && idx === records.length - 1) return;
-    const swapIdx = dir === 'up' ? idx - 1 : idx + 1;
+    const swapIdx = dir === 'down' ? idx + 1 : idx - 1;
     const newOrder = records.map((r) => ({ id: r.id, order: r.order }));
     const tmp = newOrder[idx].order;
     newOrder[idx].order = newOrder[swapIdx].order;
@@ -620,5 +629,69 @@ function announce(msg: string) {
 }
 
 function escapeHtml(s: string): string {
-  return s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c] as string));
+  return s.replace(/[&<>"]/g, (c) => ({ '&': '&', '<': '<', '>': '>', '"': '"' }[c] as string));
+}
+
+// Clear all local data: IndexedDB, caches, storage, cookies, service workers
+async function clearAppData(): Promise<void> {
+  try {
+    // Stop periodic updates
+    stopTicker();
+
+    // Wipe in-memory data
+    try {
+      decryptedCache.forEach((e) => e.secretBytes.fill(0));
+      decryptedCache.clear();
+    } catch {}
+    sessionKey = null;
+
+    // Clear IndexedDB stores
+    try {
+      await clearAll();
+    } catch {}
+
+    // Drop the entire database (best-effort)
+    try {
+      await new Promise<void>((resolve) => {
+        const req = indexedDB.deleteDatabase(DB_NAME);
+        req.onsuccess = () => resolve();
+        req.onerror = () => resolve();
+        req.onblocked = () => resolve();
+      });
+    } catch {}
+
+    // Clear Web Storage
+    try { localStorage.clear(); } catch {}
+    try { sessionStorage.clear(); } catch {}
+
+    // Clear cookies (best-effort; domain/path variations may be limited)
+    try {
+      const cookies = document.cookie ? document.cookie.split(';') : [];
+      for (const part of cookies) {
+        const eq = part.indexOf('=');
+        const name = (eq > -1 ? part.slice(0, eq) : part).trim();
+        if (!name) continue;
+        document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/;`;
+      }
+    } catch {}
+
+    // Delete all CacheStorage entries
+    try {
+      if ('caches' in window) {
+        const keys = await caches.keys();
+        await Promise.all(keys.map((k) => caches.delete(k)));
+      }
+    } catch {}
+
+    // Unregister all service workers
+    try {
+      const regs = await navigator.serviceWorker.getRegistrations();
+      await Promise.all(regs.map((r) => r.unregister()));
+    } catch {}
+
+    announce('All local app data cleared');
+  } finally {
+    // Reload to re-initialize the app without any persisted state
+    location.reload();
+  }
 }
