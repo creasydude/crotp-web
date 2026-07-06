@@ -667,6 +667,35 @@ select {
 }
 
 /* ============================================
+   Temporary (session-only) cards
+   ============================================ */
+.temp-card {
+  border-style: dashed;
+  border-color: var(--accent-glow);
+}
+
+.temp-card:hover {
+  border-style: solid;
+}
+
+.temp-badge {
+  display: inline-flex;
+  align-items: center;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--accent-light);
+  background: var(--accent-glow);
+  border: 1px solid rgba(139, 92, 246, 0.3);
+  border-radius: var(--radius-pill);
+  padding: 1px 7px;
+  margin-left: 6px;
+  vertical-align: middle;
+  text-transform: uppercase;
+  line-height: 1.6;
+}
+
+/* ============================================
    Progress (legacy linear bar — kept for compat)
    ============================================ */
 .progress {
@@ -762,6 +791,8 @@ dialog {
   width: calc(100% - 32px);
   overflow: hidden;
   animation: dialogIn var(--duration-slow) var(--ease-spring);
+  /* Center the dialog in the viewport */
+  margin: auto;
 }
 
 @keyframes dialogIn {
@@ -838,25 +869,40 @@ dialog menu {
    Footer
    ============================================ */
 .app-footer {
-  margin-top: 40px;
-  padding: 20px 24px 32px;
+  margin-top: 48px;
+  padding: 28px 24px 36px;
   border-top: 1px solid var(--border);
+  background: linear-gradient(180deg, transparent, rgba(139, 92, 246, 0.03));
 }
 
-.app-footer .social {
+.footer-inner {
+  max-width: 1100px;
+  margin: 0 auto;
   display: flex;
-  gap: 8px;
-  justify-content: center;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.footer-meta {
+  font-size: 12px;
+  color: var(--muted);
+  letter-spacing: 0.02em;
+}
+
+.footer-links {
+  display: flex;
+  gap: 6px;
   align-items: center;
 }
 
-.app-footer .icon {
+.footer-links a {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   color: var(--muted);
-  width: 40px;
-  height: 40px;
+  width: 36px;
+  height: 36px;
   border-radius: var(--radius-sm);
   border: 1px solid var(--border);
   background: var(--surface);
@@ -869,18 +915,19 @@ dialog menu {
   text-decoration: none;
 }
 
-.app-footer .icon:hover {
+.footer-links a:hover {
   color: var(--text);
   border-color: var(--accent);
   background: var(--accent-glow);
   box-shadow: 0 0 12px var(--accent-glow);
+  transform: translateY(-1px);
 }
 
-.app-footer .icon:active {
-  transform: scale(0.92);
+.footer-links a:active {
+  transform: scale(0.92) translateY(0);
 }
 
-.app-footer .icon:focus-visible {
+.footer-links a:focus-visible {
   outline: none;
   box-shadow: var(--focus-ring);
 }

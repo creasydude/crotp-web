@@ -34,6 +34,10 @@ interface DecryptedEntry {
 let sessionKey: Maybe<CryptoKey> = null;
 let decryptedCache: Map<string, DecryptedEntry> = new Map();
 
+// Temporary session-only cards (not persisted to IndexedDB)
+let tempCards: DecryptedEntry[] = [];
+let tempIdCounter = 0;
+
 // UI root
 const appEl = document.querySelector<HTMLDivElement>('#app');
 if (!appEl) throw new Error('Missing #app root');
@@ -118,6 +122,12 @@ function renderShell() {
               <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/>
             </svg>
             Scan QR
+          </button>
+          <button id="quickAddBtn" class="ghost">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px;vertical-align:-2px">
+              <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+            </svg>
+            Quick
           </button>
           <div class="search-wrap">
             <span class="search-icon">
@@ -223,16 +233,39 @@ function renderShell() {
           </div>
         </dialog>
 
+        <dialog id="quickDialog">
+          <form id="quickForm" method="dialog">
+            <div class="dialog-header">
+              <h3>Quick Add</h3>
+              <p class="muted" style="margin-top:4px;font-size:12px">Paste a secret key for instant access. Not saved — session only.</p>
+            </div>
+            <div class="dialog-body">
+              <label>Secret (Base32)
+                <input id="qSecret" placeholder="JBSWY3DPEHPK3PXP" required autofocus>
+              </label>
+            </div>
+            <div class="dialog-footer">
+              <button type="reset" class="ghost">Cancel</button>
+              <button type="submit" class="primary">Generate</button>
+            </div>
+          </form>
+        </dialog>
+
         <div aria-live="polite" aria-atomic="true" class="sr-only" id="ariaAnnounce"></div>
       </section>
 
       <footer class="app-footer">
-        <div class="social">
-          <a class="icon" href="https://github.com/creasydude/crotp-web" target="_blank" rel="noopener noreferrer" aria-label="GitHub">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-              <path d="M12 .5a11.5 11.5 0 0 0-3.64 22.41c.58.11.79-.25.79-.56v-2.2c-3.2.7-3.87-1.37-3.87-1.37-.53-1.34-1.3-1.7-1.3-1.7-1.06-.72.08-.71.08-.71 1.17.08 1.78 1.2 1.78 1.2 1.04 1.78 2.73 1.27 3.4.97.11-.76.41-1.27.74-1.56-2.55-.29-5.23-1.28-5.23-5.7 0-1.26.44-2.29 1.17-3.1-.12-.29-.5-1.45.11-3.02 0 0 .97-.31 3.18 1.18a11.02 11.02 0 0 1 5.79 0c2.2-1.49 3.17-1.18 3.17-1.18.61 1.57.23 2.73.11 3.02.73.81 1.16 1.84 1.16 3.1 0 4.43-2.69 5.41-5.25 5.69.42.36.79 1.06.79 2.15v3.19c0 .31.21.68.8.56A11.5 11.5 0 0 0 12 .5z"/>
-            </svg>
-          </a>
+        <div class="footer-inner">
+          <div class="footer-meta">
+            Offline encrypted TOTP authenticator · No data leaves your device
+          </div>
+          <div class="footer-links">
+            <a href="https://github.com/creasydude/crotp-web" target="_blank" rel="noopener noreferrer" aria-label="GitHub" title="View source on GitHub">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 .5a11.5 11.5 0 0 0-3.64 22.41c.58.11.79-.25.79-.56v-2.2c-3.2.7-3.87-1.37-3.87-1.37-.53-1.34-1.3-1.7-1.3-1.7-1.06-.72.08-.71.08-.71 1.17.08 1.78 1.2 1.78 1.2 1.04 1.78 2.73 1.27 3.4.97.11-.76.41-1.27.74-1.56-2.55-.29-5.23-1.28-5.23-5.7 0-1.26.44-2.29 1.17-3.1-.12-.29-.5-1.45.11-3.02 0 0 .97-.31 3.18 1.18a11.02 11.02 0 0 1 5.79 0c2.2-1.49 3.17-1.18 3.17-1.18.61 1.57.23 2.73.11 3.02.73.81 1.16 1.84 1.16 3.1 0 4.43-2.69 5.41-5.25 5.69.42.36.79 1.06.79 2.15v3.19c0 .31.21.68.8.56A11.5 11.5 0 0 0 12 .5z"/>
+              </svg>
+            </a>
+          </div>
         </div>
       </footer>
     </main>
@@ -426,6 +459,38 @@ function wireGlobalActions() {
   // Search
   const searchInput = document.querySelector<HTMLInputElement>('#searchInput')!;
   searchInput.addEventListener('input', () => filterList(searchInput.value.trim()));
+
+  // Quick Add
+  const quickAddBtn = document.querySelector<HTMLButtonElement>('#quickAddBtn')!;
+  quickAddBtn.addEventListener('click', () => (document.querySelector<HTMLDialogElement>('#quickDialog')!).showModal());
+
+  const quickForm = document.querySelector<HTMLFormElement>('#quickForm')!;
+  quickForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const secretInput = document.querySelector<HTMLInputElement>('#qSecret')!;
+    const secretB32 = secretInput.value.trim();
+    if (!secretB32) return;
+    try {
+      const entry = fromManualInput('Quick · ' + secretB32.slice(0, 4) + '...', undefined, secretB32, undefined, undefined, undefined);
+      const tempEntry: DecryptedEntry = {
+        id: `temp-${++tempIdCounter}`,
+        label: 'Quick · ' + secretB32.slice(0, 4) + '...',
+        issuer: undefined,
+        alg: entry.algorithm,
+        digits: entry.digits,
+        period: entry.period,
+        secretBytes: entry.secretBytes,
+      };
+      tempCards.push(tempEntry);
+      secretInput.value = '';
+      (document.querySelector<HTMLDialogElement>('#quickDialog')!).close();
+      await refreshList();
+      announce('Quick card added — session only, not saved');
+    } catch (err: any) {
+      announce(err?.message || 'Invalid Base32 secret');
+    }
+  });
+  quickForm.addEventListener('reset', () => (document.querySelector<HTMLDialogElement>('#quickDialog')!).close());
 }
 
 async function ensureSessionKey(): Promise<void> {
@@ -571,12 +636,36 @@ async function refreshList() {
       );
     })
   );
-  container.innerHTML = cards.join('');
+
+  // Render temp (session-only) cards with a "temporary" badge
+  const tempHtml = await Promise.all(
+    tempCards.map(async (e) => {
+      const windowData = await generateTOTPWindow({
+        secret: e.secretBytes,
+        period: e.period,
+        digits: e.digits,
+        algorithm: e.alg,
+        timestamp: Date.now(),
+      });
+      return renderCard(
+        e,
+        windowData.current,
+        windowData.prev,
+        windowData.next,
+        windowData.remainingSeconds,
+        windowData.period,
+        true // isTemp
+      );
+    })
+  );
+
+  container.innerHTML = cards.join('') + tempHtml.join('');
   wireCardActions();
 }
 
 async function updateCodes() {
   const now = Date.now();
+  // Update persisted cards
   for (const e of decryptedCache.values()) {
     const windowData = await generateTOTPWindow({
       secret: e.secretBytes,
@@ -587,24 +676,40 @@ async function updateCodes() {
     });
     const card = document.querySelector<HTMLDivElement>(`[data-id="${e.id}"]`);
     if (!card) continue;
-    const prevEl = card.querySelector<HTMLSpanElement>('.code-prev');
-    const currEl = card.querySelector<HTMLSpanElement>('.code-current');
-    const nextEl = card.querySelector<HTMLSpanElement>('.code-next');
-    const ringProgress = card.querySelector<SVGCircleElement>('.ring-progress');
-    const ringText = card.querySelector<SVGTextElement>('[data-text]');
-    if (prevEl) prevEl.textContent = windowData.prev;
-    if (currEl) currEl.textContent = windowData.current;
-    if (nextEl) nextEl.textContent = windowData.next;
-    // Animate ring
-    if (ringProgress) {
-      const circumference = parseFloat(ringProgress.getAttribute('data-circumference') || '175.93');
-      const pct = (windowData.period - windowData.remainingSeconds - 1) / windowData.period;
-      const offset = circumference * (1 - pct);
-      ringProgress.style.strokeDashoffset = `${offset}`;
-    }
-    if (ringText) {
-      ringText.textContent = `${windowData.remainingSeconds + 1}s`;
-    }
+    updateCardDOM(card, windowData);
+  }
+  // Update temp cards
+  for (const e of tempCards) {
+    const windowData = await generateTOTPWindow({
+      secret: e.secretBytes,
+      period: e.period,
+      digits: e.digits,
+      algorithm: e.alg,
+      timestamp: now,
+    });
+    const card = document.querySelector<HTMLDivElement>(`[data-id="${e.id}"]`);
+    if (!card) continue;
+    updateCardDOM(card, windowData);
+  }
+}
+
+function updateCardDOM(card: HTMLDivElement, windowData: { prev: string; current: string; next: string; remainingSeconds: number; period: number }) {
+  const prevEl = card.querySelector<HTMLSpanElement>('.code-prev');
+  const currEl = card.querySelector<HTMLSpanElement>('.code-current');
+  const nextEl = card.querySelector<HTMLSpanElement>('.code-next');
+  const ringProgress = card.querySelector<SVGCircleElement>('.ring-progress');
+  const ringText = card.querySelector<SVGTextElement>('[data-text]');
+  if (prevEl) prevEl.textContent = windowData.prev;
+  if (currEl) currEl.textContent = windowData.current;
+  if (nextEl) nextEl.textContent = windowData.next;
+  if (ringProgress) {
+    const circumference = parseFloat(ringProgress.getAttribute('data-circumference') || '175.93');
+    const pct = (windowData.period - windowData.remainingSeconds - 1) / windowData.period;
+    const offset = circumference * (1 - pct);
+    ringProgress.style.strokeDashoffset = `${offset}`;
+  }
+  if (ringText) {
+    ringText.textContent = `${windowData.remainingSeconds + 1}s`;
   }
 }
 
@@ -622,7 +727,8 @@ function renderCard(
   prev: string,
   next: string,
   remaining: number,
-  period: number
+  period: number,
+  isTemp = false
 ): string {
   const pct = ((period - remaining - 1) / period);
   const circumference = 2 * Math.PI * 28; // r=28
@@ -631,13 +737,15 @@ function renderCard(
   const initial = (e.issuer || e.label || '?')[0].toUpperCase();
   const color = avatarColor(e.issuer || e.label);
   const delay = Math.random() * 0.15; // stagger
+  const tempBadge = isTemp ? '<span class="temp-badge">Session only</span>' : '';
+  const removeBtn = isTemp ? `<button class="removeTempBtn icon-btn danger" title="Remove" aria-label="Remove temporary card"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>` : '';
 
   return `
-    <div class="card glass account-card" data-id="${e.id}" style="animation-delay:${delay}s">
+    <div class="card glass account-card${isTemp ? ' temp-card' : ''}" data-id="${e.id}" style="animation-delay:${delay}s">
       <div class="card-header">
         <div class="issuer-avatar" style="background:${color}">${initial}</div>
         <div class="card-info">
-          <div class="card-label">${escapeHtml(label)}</div>
+          <div class="card-label">${escapeHtml(label)} ${tempBadge}</div>
           <div class="card-meta">${e.alg} · ${e.digits} digits · ${e.period}s</div>
         </div>
       </div>
@@ -671,6 +779,7 @@ function renderCard(
           </button>
         </div>
         <div class="action-right">
+          ${!isTemp ? `
           <button class="upBtn icon-btn" title="Move up" aria-label="Move up">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>
           </button>
@@ -683,6 +792,9 @@ function renderCard(
           <button class="deleteBtn icon-btn danger" title="Delete" aria-label="Delete">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
           </button>
+          ` : `
+          ${removeBtn}
+          `}
         </div>
       </div>
     </div>
@@ -758,6 +870,19 @@ function wireCardActions() {
       const card = btn.closest('.account-card') as HTMLDivElement;
       const id = card.dataset.id!;
       await moveSecret(id, 'down');
+    });
+  });
+  // Remove temp card
+  container.querySelectorAll<HTMLButtonElement>('.removeTempBtn').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      const card = btn.closest('.account-card') as HTMLDivElement;
+      const id = card.dataset.id!;
+      tempCards = tempCards.filter((e) => e.id !== id);
+      const cur = decryptedCache.get(id);
+      if (cur) cur.secretBytes.fill(0);
+      decryptedCache.delete(id);
+      await refreshList();
+      announce('Temporary card removed');
     });
   });
 }
