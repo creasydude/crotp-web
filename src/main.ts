@@ -30,8 +30,6 @@ interface DecryptedEntry {
   secretBytes: Uint8Array;
 }
 
-const ACCENT = '#7c3aed';
-
 // In-memory session key (CryptoKey) and decrypted cache (per tab session only)
 let sessionKey: Maybe<CryptoKey> = null;
 let decryptedCache: Map<string, DecryptedEntry> = new Map();
@@ -71,98 +69,158 @@ async function init() {
 
 function renderShell() {
   appEl!.innerHTML = `
+    <!-- SVG defs for countdown ring gradient -->
+    <svg width="0" height="0" style="position:absolute">
+      <defs>
+        <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#8b5cf6"/>
+          <stop offset="100%" stop-color="#a78bfa"/>
+        </linearGradient>
+      </defs>
+    </svg>
+
     <header class="app-header">
       <div class="brand">
-        <svg class="logo" width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-          <circle cx="12" cy="12" r="9" stroke="${ACCENT}" stroke-width="2"></circle>
-          <path d="M12 7v5l3 3" stroke="${ACCENT}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
-        </svg>
+        <div class="logo">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"></circle>
+            <path d="M12 7v5l3 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+          </svg>
+        </div>
         <span class="logo-text">CROTP</span>
       </div>
       <div class="actions">
-        <button id="helpBtn" class="ghost" title="Help">Help</button>
-        <button id="clearBtn" class="ghost" title="Clear all data">Clear</button>
+        <button id="helpBtn" class="icon-btn" title="Help" aria-label="Help">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+          </svg>
+        </button>
+        <button id="clearBtn" class="icon-btn danger" title="Clear all data" aria-label="Clear all data">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+          </svg>
+        </button>
       </div>
     </header>
 
     <main class="app-main">
-
       <section id="appSection" aria-hidden="false">
         <div class="toolbar">
-          <button id="addManualBtn" class="primary">Add OTP</button>
-          <button id="addUriBtn" class="ghost">Import otpauth URI</button>
-          <button id="scanQrBtn" class="ghost">Scan QR</button>
-          <input id="searchInput" type="search" placeholder="Search…" aria-label="Search accounts">
+          <button id="addManualBtn" class="primary">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="margin-right:6px;vertical-align:-2px">
+              <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+            Add OTP
+          </button>
+          <button id="addUriBtn" class="ghost">Import URI</button>
+          <button id="scanQrBtn" class="ghost">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px;vertical-align:-2px">
+              <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/>
+            </svg>
+            Scan QR
+          </button>
+          <div class="search-wrap">
+            <span class="search-icon">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+              </svg>
+            </span>
+            <input id="searchInput" type="search" placeholder="Search accounts..." aria-label="Search accounts">
+          </div>
         </div>
 
         <div id="listContainer" class="grid"></div>
 
         <dialog id="manualDialog">
           <form id="manualForm" method="dialog">
-            <h3>Add OTP</h3>
-            <label>Label<input id="mLabel" required></label>
-            <label>Issuer<input id="mIssuer"></label>
-            <label>Secret (Base32)<input id="mSecret" required></label>
-            <div class="row">
-              <label>Algorithm
-                <select id="mAlg">
-                  <option value="SHA-1" selected>SHA-1</option>
-                  <option value="SHA-256">SHA-256</option>
-                </select>
-              </label>
-              <label>Digits
-                <select id="mDigits">
-                  <option value="6" selected>6</option>
-                  <option value="8">8</option>
-                </select>
-              </label>
-              <label>Period (s)<input id="mPeriod" type="number" min="5" max="300" value="30"></label>
+            <div class="dialog-header">
+              <h3>Add OTP</h3>
             </div>
-            <menu>
+            <div class="dialog-body">
+              <label>Label<input id="mLabel" placeholder="e.g. john@example.com" required></label>
+              <label>Issuer (optional)<input id="mIssuer" placeholder="e.g. GitHub"></label>
+              <label>Secret (Base32)<input id="mSecret" placeholder="JBSWY3DPEHPK3PXP" required></label>
+              <div class="row">
+                <label>Algorithm
+                  <select id="mAlg">
+                    <option value="SHA-1" selected>SHA-1</option>
+                    <option value="SHA-256">SHA-256</option>
+                  </select>
+                </label>
+                <label>Digits
+                  <select id="mDigits">
+                    <option value="6" selected>6</option>
+                    <option value="8">8</option>
+                  </select>
+                </label>
+                <label>Period (s)<input id="mPeriod" type="number" min="5" max="300" value="30"></label>
+              </div>
+            </div>
+            <div class="dialog-footer">
               <button type="reset" class="ghost">Cancel</button>
               <button type="submit" class="primary">Save</button>
-            </menu>
+            </div>
           </form>
         </dialog>
 
         <dialog id="uriDialog">
           <form id="uriForm" method="dialog">
-            <h3>Import otpauth URI</h3>
-            <label>otpauth URI<input id="uUri" placeholder="otpauth://totp/Issuer:Label?secret=..." required></label>
-            <menu>
+            <div class="dialog-header">
+              <h3>Import otpauth URI</h3>
+            </div>
+            <div class="dialog-body">
+              <label>otpauth URI
+                <input id="uUri" placeholder="otpauth://totp/Issuer:Label?secret=..." required>
+              </label>
+            </div>
+            <div class="dialog-footer">
               <button type="reset" class="ghost">Cancel</button>
               <button type="submit" class="primary">Import</button>
-            </menu>
+            </div>
           </form>
         </dialog>
 
         <dialog id="qrDialog">
-          <div class="row">
-            <button id="qrStartBtn" class="primary">Start Camera</button>
-            <button id="qrStopBtn" class="ghost">Stop</button>
+          <div class="dialog-header">
+            <h3>Scan QR Code</h3>
           </div>
-          <video id="qrVideo" playsinline muted></video>
-          <canvas id="qrCanvas" hidden></canvas>
-          <label>Upload image (QR)<input id="qrFile" type="file" accept="image/*"></label>
-          <p class="muted">Offline QR decoding. No data leaves your device.</p>
-          <menu>
+          <div class="dialog-body">
+            <div class="row" style="margin-bottom:12px">
+              <button id="qrStartBtn" class="primary">Start Camera</button>
+              <button id="qrStopBtn" class="ghost">Stop</button>
+            </div>
+            <video id="qrVideo" playsinline muted></video>
+            <canvas id="qrCanvas" hidden></canvas>
+            <label style="margin-top:12px">Upload image (QR)<input id="qrFile" type="file" accept="image/*"></label>
+            <p class="muted" style="margin-top:8px;font-size:12px">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:4px">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+              </svg>
+              Offline QR decoding. No data leaves your device.
+            </p>
+          </div>
+          <div class="dialog-footer">
             <button id="qrCloseBtn" class="ghost">Close</button>
-          </menu>
+          </div>
         </dialog>
 
         <dialog id="helpDialog">
-          <h3>Help & Security</h3>
-          <p class="muted">CROTP works fully offline. Tips:</p>
-          <ul>
-            <li><strong>Time sync</strong>: ensure your device time is accurate. Codes depend on time; enable automatic date/time.</li>
-            <li><strong>App key</strong>: secrets are encrypted with a locally generated key stored on this device. No password required.</li>
-            <li><strong>Backups</strong>: keep a secure record of your original OTP secrets. Encrypted export will be added in a future update.</li>
-            <li><strong>QR import</strong>: camera is only used locally to decode. You can also upload a QR image.</li>
-            <li><strong>Privacy</strong>: no network requests are made by the app. A strict CSP forbids external connections.</li>
-          </ul>
-          <menu>
+          <div class="dialog-header">
+            <h3>Help & Security</h3>
+          </div>
+          <div class="dialog-body">
+            <p class="muted">CROTP works fully offline. Tips:</p>
+            <ul style="margin:8px 0 0 18px;color:var(--text-secondary);font-size:13px;line-height:1.8">
+              <li><strong>Time sync</strong>: ensure your device time is accurate. Codes depend on time; enable automatic date/time.</li>
+              <li><strong>App key</strong>: secrets are encrypted with a locally generated key stored on this device. No password required.</li>
+              <li><strong>Backups</strong>: keep a secure record of your original OTP secrets. Encrypted export will be added in a future update.</li>
+              <li><strong>QR import</strong>: camera is only used locally to decode. You can also upload a QR image.</li>
+              <li><strong>Privacy</strong>: no network requests are made by the app. A strict CSP forbids external connections.</li>
+            </ul>
+          </div>
+          <div class="dialog-footer">
             <button id="helpCloseBtn" class="ghost">Close</button>
-          </menu>
+          </div>
         </dialog>
 
         <div aria-live="polite" aria-atomic="true" class="sr-only" id="ariaAnnounce"></div>
@@ -171,7 +229,7 @@ function renderShell() {
       <footer class="app-footer">
         <div class="social">
           <a class="icon" href="https://github.com/creasydude/crotp-web" target="_blank" rel="noopener noreferrer" aria-label="GitHub">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
               <path d="M12 .5a11.5 11.5 0 0 0-3.64 22.41c.58.11.79-.25.79-.56v-2.2c-3.2.7-3.87-1.37-3.87-1.37-.53-1.34-1.3-1.7-1.3-1.7-1.06-.72.08-.71.08-.71 1.17.08 1.78 1.2 1.78 1.2 1.04 1.78 2.73 1.27 3.4.97.11-.76.41-1.27.74-1.56-2.55-.29-5.23-1.28-5.23-5.7 0-1.26.44-2.29 1.17-3.1-.12-.29-.5-1.45.11-3.02 0 0 .97-.31 3.18 1.18a11.02 11.02 0 0 1 5.79 0c2.2-1.49 3.17-1.18 3.17-1.18.61 1.57.23 2.73.11 3.02.73.81 1.16 1.84 1.16 3.1 0 4.43-2.69 5.41-5.25 5.69.42.36.79 1.06.79 2.15v3.19c0 .31.21.68.8.56A11.5 11.5 0 0 0 12 .5z"/>
             </svg>
           </a>
@@ -469,13 +527,15 @@ async function refreshList() {
     container.innerHTML = `
       <div class="empty-wrap">
         <div class="card glass empty-state" role="region" aria-label="Get started">
-          <svg class="empty-icon" width="36" height="36" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-            <circle cx="12" cy="12" r="9" stroke="${ACCENT}" stroke-width="2"></circle>
-            <path d="M12 8v8M8 12h8" stroke="${ACCENT}" stroke-width="2" stroke-linecap="round"></path>
-          </svg>
+          <div class="empty-visual">
+            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"></circle>
+              <path d="M12 8v8M8 12h8" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
+            </svg>
+          </div>
           <h2>Add your first OTP</h2>
-          <p class="muted">Import a QR, paste an otpauth URI, or enter details manually.</p>
-          <div class="row">
+          <p class="muted">Import a QR code, paste an otpauth URI, or enter your secret key manually.</p>
+          <div class="cta-row">
             <button id="emptyAddBtn" class="primary">Add OTP</button>
             <button id="emptyImportBtn" class="ghost">Import URI</button>
             <button id="emptyScanBtn" class="ghost">Scan QR</button>
@@ -516,7 +576,6 @@ async function refreshList() {
 }
 
 async function updateCodes() {
-  // Update only numeric code and progress for each card
   const now = Date.now();
   for (const e of decryptedCache.values()) {
     const windowData = await generateTOTPWindow({
@@ -526,19 +585,35 @@ async function updateCodes() {
       algorithm: e.alg,
       timestamp: now,
     });
-    const card = document.querySelector<HTMLDivElement>(`[data-id="${e.id}"]`)!;
-    const prevEl = card.querySelector<HTMLSpanElement>('.code-prev')!;
-    const currEl = card.querySelector<HTMLSpanElement>('.code-current')!;
-    const nextEl = card.querySelector<HTMLSpanElement>('.code-next')!;
-    const progEl = card.querySelector<HTMLDivElement>('.progress>.bar')!;
-    const leftEl = card.querySelector<HTMLDivElement>('.time-left')!;
-    prevEl.textContent = windowData.prev;
-    currEl.textContent = windowData.current;
-    nextEl.textContent = windowData.next;
-    const pct = Math.floor(((windowData.period - windowData.remainingSeconds - 1) / windowData.period) * 100);
-    progEl.style.width = `${pct}%`;
-    leftEl.textContent = `${windowData.remainingSeconds + 1}s left`;
+    const card = document.querySelector<HTMLDivElement>(`[data-id="${e.id}"]`);
+    if (!card) continue;
+    const prevEl = card.querySelector<HTMLSpanElement>('.code-prev');
+    const currEl = card.querySelector<HTMLSpanElement>('.code-current');
+    const nextEl = card.querySelector<HTMLSpanElement>('.code-next');
+    const ringProgress = card.querySelector<SVGCircleElement>('.ring-progress');
+    const ringText = card.querySelector<SVGTextElement>('[data-text]');
+    if (prevEl) prevEl.textContent = windowData.prev;
+    if (currEl) currEl.textContent = windowData.current;
+    if (nextEl) nextEl.textContent = windowData.next;
+    // Animate ring
+    if (ringProgress) {
+      const circumference = parseFloat(ringProgress.getAttribute('data-circumference') || '175.93');
+      const pct = (windowData.period - windowData.remainingSeconds - 1) / windowData.period;
+      const offset = circumference * (1 - pct);
+      ringProgress.style.strokeDashoffset = `${offset}`;
+    }
+    if (ringText) {
+      ringText.textContent = `${windowData.remainingSeconds + 1}s`;
+    }
   }
+}
+
+// Avatar color from label hash
+function avatarColor(label: string): string {
+  const palette = ['#8b5cf6','#ec4899','#f59e0b','#22c55e','#3b82f6','#ef4444','#06b6d4','#84cc16'];
+  let h = 0;
+  for (let i = 0; i < label.length; i++) h = label.charCodeAt(i) + ((h << 5) - h);
+  return palette[Math.abs(h) % palette.length];
 }
 
 function renderCard(
@@ -549,28 +624,65 @@ function renderCard(
   remaining: number,
   period: number
 ): string {
-  const pct = Math.floor(((period - remaining - 1) / period) * 100);
+  const pct = ((period - remaining - 1) / period);
+  const circumference = 2 * Math.PI * 28; // r=28
+  const dashOffset = circumference * (1 - pct);
   const label = e.issuer ? `${e.issuer} · ${e.label}` : e.label;
+  const initial = (e.issuer || e.label || '?')[0].toUpperCase();
+  const color = avatarColor(e.issuer || e.label);
+  const delay = Math.random() * 0.15; // stagger
+
   return `
-    <div class="card glass account-card" data-id="${e.id}">
-      <div class="row space">
-        <div class="label">${escapeHtml(label)}</div>
-        <div class="mini muted">${e.alg} · ${e.digits} · ${e.period}s</div>
+    <div class="card glass account-card" data-id="${e.id}" style="animation-delay:${delay}s">
+      <div class="card-header">
+        <div class="issuer-avatar" style="background:${color}">${initial}</div>
+        <div class="card-info">
+          <div class="card-label">${escapeHtml(label)}</div>
+          <div class="card-meta">${e.alg} · ${e.digits} digits · ${e.period}s</div>
+        </div>
       </div>
-      <div class="codes row">
+
+      <div class="countdown-ring">
+        <svg width="68" height="68" viewBox="0 0 68 68">
+          <circle class="ring-bg" cx="34" cy="34" r="28" stroke-width="4"/>
+          <circle class="ring-progress" cx="34" cy="34" r="28" stroke-width="4"
+            stroke-dasharray="${circumference}"
+            stroke-dashoffset="${dashOffset}"
+            transform="rotate(-90 34 34)"
+            data-circumference="${circumference}"/>
+          <text class="ring-text" x="34" y="34" text-anchor="middle" dominant-baseline="central"
+            data-text="true">${remaining + 1}s</text>
+        </svg>
+      </div>
+
+      <div class="codes">
         <span class="code code-prev" aria-label="Previous code">${prev}</span>
         <span class="code code-current" aria-label="Current code">${current}</span>
         <span class="code code-next" aria-label="Next code">${next}</span>
       </div>
-      <div class="progress" aria-label="Time remaining"><div class="bar" style="width:${pct}%"></div></div>
-      <div class="mini time-left">${remaining + 1}s left</div>
-      <div class="row space">
-        <button class="copyBtn primary" title="Copy current">Copy</button>
-        <div class="row">
-          <button class="upBtn ghost" title="Move up">Up</button>
-          <button class="downBtn ghost" title="Move down">Down</button>
-          <button class="renameBtn ghost" title="Rename">Rename</button>
-          <button class="deleteBtn ghost" title="Delete">Delete</button>
+
+      <div class="card-actions">
+        <div class="action-left">
+          <button class="copyBtn primary" title="Copy current code">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px;vertical-align:-2px">
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+            </svg>
+            Copy
+          </button>
+        </div>
+        <div class="action-right">
+          <button class="upBtn icon-btn" title="Move up" aria-label="Move up">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>
+          </button>
+          <button class="downBtn icon-btn" title="Move down" aria-label="Move down">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <button class="renameBtn icon-btn" title="Rename" aria-label="Rename">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.83 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>
+          </button>
+          <button class="deleteBtn icon-btn danger" title="Delete" aria-label="Delete">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+          </button>
         </div>
       </div>
     </div>
@@ -654,7 +766,7 @@ function filterList(query: string) {
   const cards = document.querySelectorAll<HTMLDivElement>('.account-card');
   const q = query.toLowerCase();
   cards.forEach((card) => {
-    const label = card.querySelector('.label')!.textContent!.toLowerCase();
+    const label = card.querySelector('.card-label')!.textContent!.toLowerCase();
     card.style.display = label.includes(q) ? '' : 'none';
   });
 }
