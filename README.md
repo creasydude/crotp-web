@@ -1,21 +1,5 @@
 <div align="center">
 
-# ⏱️ CROTP
-
-**Offline encrypted TOTP authenticator for the web**
-
-[![Deploy to Cloudflare Pages](https://img.shields.io/badge/Deploy-Cloudflare%20Pages-blue?logo=cloudflare)](https://dash.cloudflare.com)
-![GitHub Actions](https://img.shields.io/github/actions/workflow/status/creasydude/crotp-web/ci.yml?branch=main&label=CI)
-[![GitHub Stars](https://img.shields.io/github/stars/creasydude/crotp-web?style=flat&color=yellow)](https://github.com/creasydude/crotp-web)
-[![License](https://img.shields.io/github/license/creasydude/crotp-web)](LICENSE)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.9-blue?logo=typescript)](https://www.typescriptlang.org/)
-[![Vite](https://img.shields.io/badge/Vite-7-purple?logo=vite)](https://vite.dev/)
-[![PWA](https://img.shields.io/badge/PWA-Offline%20Ready-green?logo=pwa)](https://web.dev/articles/what-are-pwas)
-
-All codes are generated locally in your browser. **No network requests. No backend. No accounts.**
-
-</div>
-
 ---
 
 ## Features
@@ -31,15 +15,15 @@ All codes are generated locally in your browser. **No network requests. No backe
 
 ## Tech Stack
 
-| Layer | Technology |
-|-------|-----------|
-| Framework | Vanilla TypeScript |
-| Bundler | Vite 7 |
-| Crypto | WebCrypto API (AES-256-GCM) |
-| TOTP | Custom RFC 6238 implementation |
-| QR | [jsQR](https://github.com/nicbarker/jsQR) (on-device) |
-| Storage | IndexedDB |
-| Hosting | Cloudflare Pages |
+| Layer     | Technology                                           |
+| --------- | ---------------------------------------------------- |
+| Framework | Vanilla TypeScript                                   |
+| Bundler   | Vite 7                                               |
+| Crypto    | WebCrypto API (AES-256-GCM)                          |
+| TOTP      | Custom RFC 6238 implementation                       |
+| QR        | [jsQR](https://github.com/nicbarker/jsQR) (on-device) |
+| Storage   | IndexedDB                                            |
+| Hosting   | Cloudflare Pages                                     |
 
 ## Quick Start
 
