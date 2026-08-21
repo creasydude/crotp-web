@@ -156,7 +156,7 @@ function renderShell() {
 
     <!-- Main Command Deck Workspace -->
     <main class="workspace-grid">
-      <!-- Left Column: Spotlight Command Pane -->
+      <!-- Left Column: Spotlight Command Pane (Transparent, Spacious, Non-scrollable) -->
       <section class="spotlight-pane">
         <!-- Spotlight Card Container -->
         <div id="spotlightContainer"></div>
@@ -810,7 +810,7 @@ async function refreshList() {
   wireDeckCardActions();
 }
 
-// Render Spotlight Card HTML
+// Render Spotlight Card HTML with Pure Transparent Glass and Ambient Depth
 function renderSpotlightCardHtml(
   e: DecryptedEntry,
   w: { prev: string; current: string; next: string; remainingSeconds: number; period: number }
@@ -826,60 +826,70 @@ function renderSpotlightCardHtml(
   const warningClass = w.remainingSeconds <= 4 ? 'danger' : w.remainingSeconds <= 8 ? 'warning' : '';
 
   return `
-    <div class="spotlight-card" id="spotlightCard" data-id="${e.id}">
-      <div class="spotlight-header">
-        <div class="spotlight-meta-info">
-          <div class="spotlight-avatar" style="background:${avatarBg}">${initial}</div>
-          <div class="spotlight-title-group">
-            <div class="spotlight-title">${escapeHtml(e.issuer || e.label)}</div>
-            <div class="spotlight-subtitle">${escapeHtml(e.label)} · ${e.alg} · ${e.digits}D</div>
+    <div class="spotlight-card-wrapper" id="spotlightWrapper">
+      <!-- Ambient Backlight Aura -->
+      <div class="spotlight-card-aura"></div>
+
+      <!-- Transparent Holographic 3D Card -->
+      <div class="spotlight-card" id="spotlightCard" data-id="${e.id}">
+        <!-- Specular Glass Glare Layer -->
+        <div class="spotlight-glare"></div>
+
+        <!-- Header Row -->
+        <div class="spotlight-header">
+          <div class="spotlight-meta-info">
+            <div class="spotlight-avatar" style="background:${avatarBg}">${initial}</div>
+            <div class="spotlight-title-group">
+              <div class="spotlight-title">${escapeHtml(e.issuer || e.label)}</div>
+              <div class="spotlight-subtitle">${escapeHtml(e.label)} · ${e.alg} · ${e.digits}D</div>
+            </div>
+          </div>
+          <span class="spotlight-status-tag">${isTemp ? 'SESSION' : 'SECURE'}</span>
+        </div>
+
+        <!-- Giant Floating Monospace Digits (Pure Glowing Projection) -->
+        <div class="spotlight-code-area" id="spotlightCodeArea" title="Click to copy code">
+          <div class="spotlight-code-digits" id="spotlightDigits">${formattedCode}</div>
+          <div class="click-to-copy-hint">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+            </svg>
+            <span>CLICK CODE TO COPY</span>
           </div>
         </div>
-        <span class="spotlight-status-tag">${isTemp ? 'SESSION' : 'SECURE'}</span>
-      </div>
 
-      <!-- Giant Monospace Digits Click to Copy -->
-      <div class="spotlight-code-area" id="spotlightCodeArea" title="Click to copy code">
-        <div class="spotlight-code-digits" id="spotlightDigits">${formattedCode}</div>
-        <div class="click-to-copy-hint">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <!-- Timeline Steps & Chronometer Dial -->
+        <div class="spotlight-timeline-row">
+          <div class="step-box">
+            <span class="step-label">Previous</span>
+            <span class="step-code" id="spotlightPrev">${formatCodeGroupings(w.prev)}</span>
+          </div>
+
+          <div class="spotlight-chronometer ${warningClass}" id="spotlightChronometer">
+            <svg width="68" height="68" viewBox="0 0 68 68">
+              <circle class="dial-bg" cx="34" cy="34" r="30" stroke-width="4.5"/>
+              <circle class="dial-progress" cx="34" cy="34" r="30" stroke-width="4.5"
+                stroke-dasharray="${circumference}"
+                stroke-dashoffset="${dashOffset}"
+                data-circumference="${circumference}"/>
+            </svg>
+            <span class="dial-text" id="spotlightRemaining">${w.remainingSeconds + 1}s</span>
+          </div>
+
+          <div class="step-box" style="text-align:right">
+            <span class="step-label">Next</span>
+            <span class="step-code" id="spotlightNext">${formatCodeGroupings(w.next)}</span>
+          </div>
+        </div>
+
+        <!-- Big Action Button -->
+        <button class="spotlight-copy-btn" id="spotlightCopyBtn">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
           </svg>
-          <span>CLICK CODE TO COPY</span>
-        </div>
+          <span>COPY CURRENT CODE</span>
+        </button>
       </div>
-
-      <!-- Timeline Steps & Radial Chronometer -->
-      <div class="spotlight-timeline-row">
-        <div class="step-box">
-          <span class="step-label">Previous</span>
-          <span class="step-code" id="spotlightPrev">${formatCodeGroupings(w.prev)}</span>
-        </div>
-
-        <div class="spotlight-chronometer ${warningClass}" id="spotlightChronometer">
-          <svg width="72" height="72" viewBox="0 0 72 72">
-            <circle class="dial-bg" cx="36" cy="36" r="30" stroke-width="4.5"/>
-            <circle class="dial-progress" cx="36" cy="36" r="30" stroke-width="4.5"
-              stroke-dasharray="${circumference}"
-              stroke-dashoffset="${dashOffset}"
-              data-circumference="${circumference}"/>
-          </svg>
-          <span class="dial-text" id="spotlightRemaining">${w.remainingSeconds + 1}s</span>
-        </div>
-
-        <div class="step-box" style="text-align:right">
-          <span class="step-label">Next</span>
-          <span class="step-code" id="spotlightNext">${formatCodeGroupings(w.next)}</span>
-        </div>
-      </div>
-
-      <!-- Action Button -->
-      <button class="spotlight-copy-btn" id="spotlightCopyBtn">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
-        </svg>
-        <span>COPY CURRENT CODE</span>
-      </button>
     </div>
   `;
 }
@@ -960,7 +970,7 @@ function renderDeckCardHtml(
   `;
 }
 
-// Wire Spotlight Card Mouse 3D Tilt & Events
+// Wire Spotlight Card Mouse 3D Tilt with Smooth Spring Inertia & Specular Relief
 function wireSpotlightEvents() {
   const card = document.getElementById('spotlightCard');
   const copyBtn = document.getElementById('spotlightCopyBtn');
@@ -969,23 +979,73 @@ function wireSpotlightEvents() {
 
   if (!card) return;
 
-  // 3D Tilt Parallax on hover
-  card.addEventListener('mousemove', (e) => {
+  let targetRotateX = 0;
+  let targetRotateY = 0;
+  let currentRotateX = 0;
+  let currentRotateY = 0;
+  let isHovered = false;
+  let animFrameId: number | null = null;
+
+  const updateCardPhysics = () => {
+    // Smooth lerp damping
+    currentRotateX += (targetRotateX - currentRotateX) * 0.12;
+    currentRotateY += (targetRotateY - currentRotateY) * 0.12;
+
+    const scale = isHovered ? 1.025 : 1.0;
+    const translateZ = isHovered ? 16 : 0;
+
+    card.style.transform = `perspective(1200px) rotateX(${currentRotateX.toFixed(2)}deg) rotateY(${currentRotateY.toFixed(2)}deg) translateZ(${translateZ}px) scale3d(${scale}, ${scale}, ${scale})`;
+
+    if (
+      Math.abs(targetRotateX - currentRotateX) > 0.01 ||
+      Math.abs(targetRotateY - currentRotateY) > 0.01 ||
+      isHovered
+    ) {
+      animFrameId = requestAnimationFrame(updateCardPhysics);
+    } else {
+      animFrameId = null;
+    }
+  };
+
+  const onMouseMove = (e: MouseEvent) => {
+    isHovered = true;
     const rect = card.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
+    const percentX = (x / rect.width) * 100;
+    const percentY = (y / rect.height) * 100;
+
+    // Update dynamic specular lighting CSS variables
+    card.style.setProperty('--mouse-x', `${percentX}%`);
+    card.style.setProperty('--mouse-y', `${percentY}%`);
+
     const centerX = rect.width / 2;
     const centerY = rect.height / 2;
-    const rotateX = ((y - centerY) / centerY) * -7;
-    const rotateY = ((x - centerX) / centerX) * 7;
-    card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.02, 1.02, 1.02)`;
-  });
+    // 3D tilt angles (up to 10 deg)
+    targetRotateX = ((y - centerY) / centerY) * -9;
+    targetRotateY = ((x - centerX) / centerX) * 11;
 
-  card.addEventListener('mouseleave', () => {
-    card.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)';
-  });
+    if (!animFrameId) {
+      animFrameId = requestAnimationFrame(updateCardPhysics);
+    }
+  };
 
-  // Copy Action handler
+  const onMouseLeave = () => {
+    isHovered = false;
+    targetRotateX = 0;
+    targetRotateY = 0;
+    card.style.setProperty('--mouse-x', '50%');
+    card.style.setProperty('--mouse-y', '30%');
+
+    if (!animFrameId) {
+      animFrameId = requestAnimationFrame(updateCardPhysics);
+    }
+  };
+
+  card.addEventListener('mousemove', onMouseMove);
+  card.addEventListener('mouseleave', onMouseLeave);
+
+  // Copy Action handler with pulse and visual feedback
   const triggerCopy = async () => {
     const rawDigits = digitsEl?.textContent?.replace(/\s/g, '') || '';
     if (!rawDigits) return;
@@ -993,6 +1053,10 @@ function wireSpotlightEvents() {
       await navigator.clipboard.writeText(rawDigits);
       showToast(`Copied code ${rawDigits} to clipboard!`, 'success');
       threeBg?.triggerPulse(0x8b5cf6);
+
+      // Visual flash pulse on the digits
+      codeArea?.classList.add('copied-pulse');
+      setTimeout(() => codeArea?.classList.remove('copied-pulse'), 500);
     } catch {
       showToast('Clipboard permission denied', 'error');
     }
@@ -1010,7 +1074,7 @@ function wireDeckCardActions() {
   container.querySelectorAll<HTMLDivElement>('.token-card').forEach((card) => {
     card.addEventListener('click', async (e) => {
       const target = e.target as HTMLElement;
-      if (target.closest('button')) return; // Ignore if clicked a tool button
+      if (target.closest('button')) return;
       const id = card.dataset.id!;
       if (activeCardId !== id) {
         activeCardId = id;
