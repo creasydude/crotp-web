@@ -2,16 +2,26 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="description" content="CROTP — Offline, encrypted TOTP authenticator for the web." />
-    <meta name="theme-color" content="#7c3aed" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="description" content="CROTP — High-Security, Offline Encrypted TOTP Authenticator for the Web." />
+    <meta name="theme-color" content="#06070a" />
     <link rel="icon" type="image/svg+xml" href="/crotp.svg" />
     <link rel="apple-touch-icon" href="/crotp.svg" />
     <link rel="manifest" href="/manifest.webmanifest" />
-    <title>CROTP - Offline encrypted TOTP authenticator</title>
+
+    <!-- Google Fonts: Outfit, Space Grotesk, JetBrains Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&family=Outfit:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <title>CROTP · Cybernetic Encrypted 2FA Authenticator</title>
   </head>
   <body>
     <noscript>This app requires JavaScript to run entirely offline.</noscript>
+    <div id="bg-canvas" aria-hidden="true"></div>
     <div id="app" aria-live="polite"></div>
     <script type="module" src="/src/main.ts"></script>
   </body>
