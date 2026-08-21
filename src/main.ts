@@ -107,57 +107,53 @@ function renderShell() {
       </defs>
     </svg>
 
-    <!-- Top HUD Header -->
-    <header class="app-header">
-      <div class="brand">
-        <div class="logo">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-          </svg>
-        </div>
-        <div class="brand-text-wrap">
-          <span class="logo-text">CROTP</span>
-          <div class="security-badge">
-            <span class="dot"></span>
-            <span>OFFLINE // AES-256 GCM</span>
+    <!-- Main Frameless Edge-to-Edge Workspace -->
+    <main class="workspace-grid">
+      <!-- Left Column: Top-Left Micro HUD Bar + Spotlight + Commands -->
+      <section class="spotlight-pane">
+        <!-- Top-Left Compact Micro HUD Bar -->
+        <div class="mini-hud-bar">
+          <div class="mini-brand-group">
+            <div class="mini-logo-icon">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+              </svg>
+            </div>
+            <div style="display:flex;align-items:center;">
+              <span class="mini-brand-title">CROTP</span>
+              <span class="mini-live-dot" title="Offline AES-GCM Encrypted"></span>
+            </div>
+          </div>
+
+          <!-- Micro Live UTC Time Chip -->
+          <div class="mini-hud-center">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--accent-cyan-light)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+            </svg>
+            <span id="hudTimeDisplay" class="time-val">00:00:00 UTC</span>
+          </div>
+
+          <!-- Micro Tools Dock -->
+          <div class="mini-hud-actions">
+            <button id="demoBtn" class="btn-icon-mini" title="Generate Demo Key" aria-label="Demo Account">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+              </svg>
+            </button>
+            <button id="helpBtn" class="btn-icon-mini" title="Help & Security" aria-label="Help">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+              </svg>
+            </button>
+            <button id="clearBtn" class="btn-icon-mini danger" title="Wipe Vault" aria-label="Wipe Vault">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+              </svg>
+            </button>
           </div>
         </div>
-      </div>
 
-      <!-- Real-Time HUD Clock & Sync Status -->
-      <div class="hud-clock-widget">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent-cyan-light)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
-        </svg>
-        <span id="hudTimeDisplay" class="time-val">00:00:00 UTC</span>
-        <span class="sync-tag">IN SYNC</span>
-      </div>
-
-      <!-- Header Actions -->
-      <div class="header-actions">
-        <button id="demoBtn" class="btn-icon" title="Generate Demo Account" aria-label="Demo Account">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
-          </svg>
-        </button>
-        <button id="helpBtn" class="btn-icon" title="Help & Security" aria-label="Help">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/>
-          </svg>
-        </button>
-        <button id="clearBtn" class="btn-icon danger" title="Wipe Vault Data" aria-label="Wipe Vault">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
-          </svg>
-        </button>
-      </div>
-    </header>
-
-    <!-- Main Command Deck Workspace -->
-    <main class="workspace-grid">
-      <!-- Left Column: Spotlight Command Pane (Transparent, Spacious, Non-scrollable) -->
-      <section class="spotlight-pane">
         <!-- Spotlight Card Container -->
         <div id="spotlightContainer"></div>
 
@@ -166,26 +162,26 @@ function renderShell() {
           <div class="command-hub-title">Command Actions</div>
           <div class="quick-actions-grid">
             <button id="addManualBtn" class="action-card-btn highlight">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
                 <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
               </svg>
               <span>Add OTP</span>
             </button>
             <button id="scanQrBtn" class="action-card-btn">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/>
               </svg>
               <span>Scan QR</span>
             </button>
             <button id="addUriBtn" class="action-card-btn">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
                 <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
               </svg>
               <span>Import URI</span>
             </button>
             <button id="quickAddBtn" class="action-card-btn">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
               </svg>
               <span>Quick Key</span>
@@ -195,7 +191,7 @@ function renderShell() {
           <!-- Live Search Filter -->
           <div class="search-control">
             <span class="search-icon">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
               </svg>
             </span>
@@ -380,18 +376,18 @@ function wireGlobalActions() {
   const helpBtn = document.querySelector<HTMLButtonElement>('#helpBtn')!;
   const helpDialog = document.querySelector<HTMLDialogElement>('#helpDialog')!;
   const helpCloseBtn = document.querySelector<HTMLButtonElement>('#helpCloseBtn')!;
-  helpBtn.addEventListener('click', () => helpDialog.showModal());
-  helpCloseBtn.addEventListener('click', () => helpDialog.close());
+  helpBtn?.addEventListener('click', () => helpDialog.showModal());
+  helpCloseBtn?.addEventListener('click', () => helpDialog.close());
 
   // Demo Token Generator Button
   const demoBtn = document.querySelector<HTMLButtonElement>('#demoBtn')!;
-  demoBtn.addEventListener('click', async () => {
+  demoBtn?.addEventListener('click', async () => {
     await addDemoAccount();
   });
 
   // Clear Vault Button
   const clearBtn = document.querySelector<HTMLButtonElement>('#clearBtn')!;
-  clearBtn.addEventListener('click', async () => {
+  clearBtn?.addEventListener('click', async () => {
     const ok = confirm('SECURITY WARNING:\nThis will permanently purge all encrypted secrets, session keys, and cache from this browser. Continue?');
     if (!ok) return;
     await clearAppData();
@@ -408,14 +404,14 @@ function wireGlobalActions() {
   const qrDialog = document.querySelector<HTMLDialogElement>('#qrDialog')!;
   const quickDialog = document.querySelector<HTMLDialogElement>('#quickDialog')!;
 
-  addManualBtn.addEventListener('click', () => manualDialog.showModal());
-  addUriBtn.addEventListener('click', () => uriDialog.showModal());
-  scanQrBtn.addEventListener('click', () => qrDialog.showModal());
-  quickAddBtn.addEventListener('click', () => quickDialog.showModal());
+  addManualBtn?.addEventListener('click', () => manualDialog.showModal());
+  addUriBtn?.addEventListener('click', () => uriDialog.showModal());
+  scanQrBtn?.addEventListener('click', () => qrDialog.showModal());
+  quickAddBtn?.addEventListener('click', () => quickDialog.showModal());
 
   // Manual form
   const manualForm = document.querySelector<HTMLFormElement>('#manualForm')!;
-  manualForm.addEventListener('submit', async (e) => {
+  manualForm?.addEventListener('submit', async (e) => {
     e.preventDefault();
     if (!sessionKey) await ensureSessionKey();
 
@@ -438,11 +434,11 @@ function wireGlobalActions() {
       showToast(err?.message || 'Failed to add entry', 'error');
     }
   });
-  manualForm.addEventListener('reset', () => manualDialog.close());
+  manualForm?.addEventListener('reset', () => manualDialog.close());
 
   // URI form
   const uriForm = document.querySelector<HTMLFormElement>('#uriForm')!;
-  uriForm.addEventListener('submit', async (e) => {
+  uriForm?.addEventListener('submit', async (e) => {
     e.preventDefault();
     if (!sessionKey) await ensureSessionKey();
 
@@ -459,11 +455,11 @@ function wireGlobalActions() {
       showToast(err?.message || 'Invalid otpauth URI', 'error');
     }
   });
-  uriForm.addEventListener('reset', () => uriDialog.close());
+  uriForm?.addEventListener('reset', () => uriDialog.close());
 
   // Quick Key form
   const quickForm = document.querySelector<HTMLFormElement>('#quickForm')!;
-  quickForm.addEventListener('submit', async (e) => {
+  quickForm?.addEventListener('submit', async (e) => {
     e.preventDefault();
     const secretInput = document.querySelector<HTMLInputElement>('#qSecret')!;
     const secretB32 = secretInput.value.trim();
@@ -490,7 +486,7 @@ function wireGlobalActions() {
       showToast(err?.message || 'Invalid Base32 secret', 'error');
     }
   });
-  quickForm.addEventListener('reset', () => quickDialog.close());
+  quickForm?.addEventListener('reset', () => quickDialog.close());
 
   // QR Scanner logic
   wireQrScanner();
@@ -499,8 +495,8 @@ function wireGlobalActions() {
   const searchInput = document.querySelector<HTMLInputElement>('#searchInput')!;
   const clearSearchBtn = document.querySelector<HTMLButtonElement>('#clearSearchBtn')!;
 
-  searchInput.addEventListener('input', () => filterList(searchInput.value.trim()));
-  clearSearchBtn.addEventListener('click', () => {
+  searchInput?.addEventListener('input', () => filterList(searchInput.value.trim()));
+  clearSearchBtn?.addEventListener('click', () => {
     searchInput.value = '';
     filterList('');
   });
@@ -532,7 +528,7 @@ function wireQrScanner() {
     canvas.hidden = true;
   };
 
-  qrStartBtn.addEventListener('click', async () => {
+  qrStartBtn?.addEventListener('click', async () => {
     try {
       stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
       video.srcObject = stream;
@@ -575,14 +571,14 @@ function wireQrScanner() {
     }
   });
 
-  qrStopBtn.addEventListener('click', stopCamera);
-  qrCloseBtn.addEventListener('click', () => {
+  qrStopBtn?.addEventListener('click', stopCamera);
+  qrCloseBtn?.addEventListener('click', () => {
     stopCamera();
     qrDialog.close();
   });
 
   // Upload QR Image file fallback
-  qrFile.addEventListener('change', async () => {
+  qrFile?.addEventListener('change', async () => {
     const file = qrFile.files && qrFile.files[0];
     if (!file) return;
     const reader = new FileReader();
